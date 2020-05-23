@@ -23,10 +23,10 @@ class NNSingleFunctionalEstimator:
         self.alphas = alphas
         self.beta = beta
         self.functional_names = \
-            [r'Shannon knn-functional-estimation'] + \
-            [r'{}-knn-functional-estimation'.format(alpha) for alpha in alphas] + \
-            [r'Generalized ${}$-knn-functional-estimation'.format(alpha) for alpha in alphas] + \
-            [r'Exponential $({},{})$-knn-functional-estimation'.format(alpha, beta) for alpha in alphas]
+            [r'Shannon entropy'] + \
+            [r'{}-entropy'.format(alpha) for alpha in alphas] + \
+            [r'Generalized ${}$-entropy'.format(alpha) for alpha in alphas] + \
+            [r'Exponential $({},{})$-entropy'.format(alpha, beta) for alpha in alphas]
         self.num_functionals = len(self.functional_names)
 
     def phi(self, u):
