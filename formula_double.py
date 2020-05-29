@@ -18,7 +18,7 @@ class DoubleDensityFunctionalFormulas:
     def functionals(self, alphas):
         return np.stack([self.kl_divergence] +
                         [self.alpha_divergence(alpha) for alpha in alphas] +
-                        [self.generalized_alpha_divergence(alpha) for alpha in alphas],
+                        [self.logarithmic_alpha_divergence(alpha) for alpha in alphas],
                         0)
 
     @property
@@ -28,7 +28,7 @@ class DoubleDensityFunctionalFormulas:
     def alpha_divergence(self, alpha):
         raise NotImplementedError
 
-    def generalized_alpha_divergence(self, alpha):
+    def logarithmic_alpha_divergence(self, alpha):
         raise NotImplementedError
 
     @property
@@ -123,6 +123,9 @@ class DoubleDensityFunctionalFormulasUniform(DoubleDensityFunctionalFormulas):
 
     def generalized_alpha_divergence(self, alpha):
         return (self.a ** ((1 - alpha) * self.dims)) * self.dims * np.log(self.b / self.a)
+
+    def logarithmic_alpha_divergence(self, alpha):
+        return ((self.a / self.b) ** ((1 - alpha) * self.dims)) * self.dims * np.log(self.b / self.a)
 
     @property
     def asymptotic_nn_classification_error(self):

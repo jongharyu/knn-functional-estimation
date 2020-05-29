@@ -25,7 +25,7 @@ class NNDoubleFunctionalEstimator:
         self.alphas = alphas
         self.functional_names = ['KL divergence'] + \
                                 ['{}-divergence'.format(alpha) for alpha in alphas] + \
-                                ['Generalized {}-divergence'.format(alpha) for alpha in alphas]
+                                ['Logarithmic {}-divergence'.format(alpha) for alpha in alphas]
         self.num_functionals = len(self.functional_names)
 
     def phi(self, u, v):
@@ -33,7 +33,7 @@ class NNDoubleFunctionalEstimator:
 
         phis = np.stack([phi_kl_divergence(u, v, self.ks, self.ls)] +
                         [phi_alpha_divergence(u, v, self.ks, self.ls, alpha) for alpha in self.alphas] +
-                        [phi_generalized_alpha_divergence(u, v, self.ks, self.ls, alpha) for alpha in self.alphas],
+                        [phi_logarithmic_alpha_divergence(u, v, self.ks, self.ls, alpha) for alpha in self.alphas],
                         0)  # (num_functionals, m, len(ks))
         return phis
 
@@ -65,10 +65,12 @@ def phi_alpha_divergence(u, v, ks, ls, alpha):
            (u / v) ** (1 - alpha)
 
 
-def phi_generalized_alpha_divergence(u, v, ks, ls, alpha):
-    return np.exp(np.log(gamma(ks)) - np.log(gamma(np.maximum(ks, np.ceil(alpha - 1 + 1e-5)) - alpha + 1))) * \
-           u ** (1 - alpha) * (digamma(np.maximum(ks, np.ceil(alpha - 1 + 1e-5)) - alpha + 1) -
-                               digamma(ls) + np.log(v) - np.log(u))
+def phi_logarithmic_alpha_divergence(u, v, ks, ls, alpha):
+    return np.exp(np.log(gamma(ks)) - np.log(gamma(np.maximum(ks, np.ceil(alpha - 1 + 1e-5)) - alpha + 1)) +
+                  np.log(gamma(ls)) - np.log(gamma(np.maximum(ls, np.ceil(1 - alpha + 1e-5)) + alpha - 1))) * \
+           (v / u) ** (alpha - 1) * (digamma(np.maximum(ks, np.ceil(alpha - 1 + 1e-5)) - alpha + 1) -
+                                     digamma(np.maximum(ls, np.ceil(1 - alpha + 1e-5)) + alpha - 1) +
+                                     np.log(v) - np.log(u))
 
 
 def phi_asymptotic_nn_classification_error(u, v, ks, ls):

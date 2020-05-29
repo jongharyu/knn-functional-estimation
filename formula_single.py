@@ -13,7 +13,7 @@ class SingleDensityFunctionalFormulas:
     def functionals(self, alphas, beta):
         return np.stack([self.shannon_entropy] +
                         [self.alpha_entropy(alpha) for alpha in alphas] +
-                        [self.generalized_alpha_entropy(alpha) for alpha in alphas] +
+                        [self.logarithmic_alpha_entropy(alpha) for alpha in alphas] +
                         [self.exponential_alpha_beta_entropy(alpha, beta) for alpha in alphas], 0)
 
     @property
@@ -23,7 +23,7 @@ class SingleDensityFunctionalFormulas:
     def alpha_entropy(self, alpha):
         raise NotImplementedError
 
-    def generalized_alpha_entropy(self, alpha):
+    def logarithmic_alpha_entropy(self, alpha):
         raise NotImplementedError
 
     def exponential_alpha_beta_entropy(self, alpha, beta):
@@ -64,7 +64,7 @@ class SingleDensityFunctionalFormulasGaussian(SingleDensityFunctionalFormulas):
 
         return entropy
 
-    def generalized_alpha_entropy(self, alpha):
+    def logarithmic_alpha_entropy(self, alpha):
         assert alpha > 0
         dims = self.dims
 
@@ -100,7 +100,7 @@ class SingleDensityFunctionalFormulasUniform(SingleDensityFunctionalFormulas):
     def alpha_entropy(self, alpha):
         return self.r ** ((1 - alpha) * self.dims)
 
-    def generalized_alpha_entropy(self, alpha):
+    def logarithmic_alpha_entropy(self, alpha):
         return (self.r ** ((1 - alpha) * self.dims)) * self.dims * np.log(self.r)
 
     def exponential_alpha_beta_entropy(self, alpha, beta):

@@ -25,7 +25,7 @@ class NNSingleFunctionalEstimator:
         self.functional_names = \
             [r'Shannon entropy'] + \
             [r'{}-entropy'.format(alpha) for alpha in alphas] + \
-            [r'Generalized ${}$-entropy'.format(alpha) for alpha in alphas] + \
+            [r'Logarithmic ${}$-entropy'.format(alpha) for alpha in alphas] + \
             [r'Exponential $({},{})$-entropy'.format(alpha, beta) for alpha in alphas]
         self.num_functionals = len(self.functional_names)
 
@@ -46,7 +46,7 @@ class NNSingleFunctionalEstimator:
         assert (u > 0).all()
         phis = np.stack([phi_shannon_entropy(u, self.ks)] +
                         [phi_alpha_entropy(u, self.ks, alpha) for alpha in self.alphas] +
-                        [phi_generalized_alpha_entropy(u, self.ks, alpha) for alpha in self.alphas] +
+                        [phi_logarithmic_alpha_entropy(u, self.ks, alpha) for alpha in self.alphas] +
                         [phi_exponential_alpha_beta_entropy(u, self.ks, alpha, self.beta) for alpha in self.alphas],
                         0)  # (num_functionals, m, len(ks))
         return phis
@@ -74,7 +74,7 @@ def phi_alpha_entropy(u, ks, alpha):
            (u ** (1 - alpha))
 
 
-def phi_generalized_alpha_entropy(u, ks, alpha):
+def phi_logarithmic_alpha_entropy(u, ks, alpha):
     return np.exp(np.log(gamma(ks)) - np.log(gamma(np.maximum(ks, np.ceil(alpha - 1 + 1e-5)) - alpha + 1))) * \
            (u ** (1 - alpha)) * (np.log(u) - digamma(np.maximum(ks, np.ceil(alpha - 1 + 1e-5)) - alpha + 1))
 
