@@ -1,8 +1,6 @@
 import numpy as np
-from scipy.special import gamma
-from scipy.special import gammainc
 
-from utility import find_unit_volume
+from utility import find_unit_volume, incgamma
 
 
 class SingleDensityFunctionalFormulas:
@@ -43,15 +41,14 @@ class SingleDensityFunctionalFormulasGaussian(SingleDensityFunctionalFormulas):
 
         self.r = r
         self.cdr = lambda alpha: (2 ** (self.dims / 2 - 1)) * self.dims * self.unit_volumes * \
-                                 gammainc(self.dims / 2, (r ** 2) / (2 * alpha)) * gamma(self.dims / 2)
+                                 incgamma(self.dims / 2, (r ** 2) / (2 * alpha))
 
     @property
     def shannon_entropy(self):
         dims = self.dims
         r = self.r
 
-        entropy = gammainc(1 + dims / 2, (r ** 2) / 2) / gammainc(dims / 2, (r ** 2) / 2) * \
-                  gamma(1 + dims / 2) / gamma(dims / 2)
+        entropy = incgamma(1 + dims / 2, (r ** 2) / 2) / incgamma(dims / 2, (r ** 2) / 2)
         entropy += np.log(self.cdr(1))
 
         return entropy
@@ -71,8 +68,8 @@ class SingleDensityFunctionalFormulasGaussian(SingleDensityFunctionalFormulas):
         entropy = (self.cdr(1 / alpha) * np.log(self.cdr(1)) /
                    ((alpha ** (dims / 2)) * (self.cdr(1) ** alpha))) + \
                   2 ** (dims / 2 - 1) * dims * self.unit_volumes * \
-                  gammainc(dims / 2 + 1, alpha * (self.r ** 2) / 2) * \
-                  gamma(dims / 2 + 1) / ((alpha ** (dims / 2 + 1)) * (self.cdr(1) ** alpha))
+                  incgamma(dims / 2 + 1, alpha * (self.r ** 2) / 2) / \
+                  ((alpha ** (dims / 2 + 1)) * (self.cdr(1) ** alpha))
 
         return entropy
 

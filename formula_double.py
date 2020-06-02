@@ -1,8 +1,6 @@
 import numpy as np
-from scipy.special import gamma
-from scipy.special import gammainc
 
-from utility import find_unit_volume
+from utility import find_unit_volume, incgamma
 
 
 class DoubleDensityFunctionalFormulas:
@@ -54,16 +52,17 @@ class DoubleDensityFunctionalFormulasGaussian(DoubleDensityFunctionalFormulas):
 
         self.r = r
         self.sigma = sigma
-        self.const = gammainc(self.dims / 2 + 1, (r ** 2) / 2) * gamma(self.dims / 2 + 1) / \
-                     (gammainc(self.dims / 2, (r ** 2) / 2) * gamma(self.dims / 2))
         self.cdr = lambda alpha: (2 ** (self.dims / 2 - 1)) * self.dims * self.unit_volumes * \
-                                 gammainc(self.dims / 2, (r ** 2) / (2 * alpha)) * gamma(self.dims / 2)
+                                 incgamma(self.dims / 2, (r ** 2) / (2 * alpha))
 
     @property
     def kl_divergence(self):
         dims = self.dims
+
+        r = self.r
         divergence = dims * np.log(self.sigma) + np.log(self.cdr(self.sigma ** 2) / self.cdr(1)) - \
-                     (1 - (self.sigma ** (-2.))) * self.const
+                     (1 - (self.sigma ** (-2.))) * incgamma(self.dims / 2 + 1, (r ** 2) / 2) / \
+                     (incgamma(self.dims / 2, (r ** 2) / 2))
 
         return divergence
 
@@ -83,17 +82,31 @@ class DoubleDensityFunctionalFormulasGaussian(DoubleDensityFunctionalFormulas):
         assert alpha >= 1
 
         dims = self.dims
-        alpha_tilde = 1 - (1 - alpha) * (1 - (self.sigma ** (-2.)))
+        r = self.r
 
         # Formula for $p**{\alpha-1}\ln (p/q)$
         unit_volumes = self.unit_volumes
         divergence = 1 / 2 * self.cdr(1 / alpha) * dims * np.log((self.sigma ** 2)) / \
                      ((alpha ** (dims / 2)) * (self.cdr(1) ** alpha)) - \
                      ((1 - self.sigma ** (-2.)) * (2 ** (dims / 2 - 1)) * dims * unit_volumes *
-                      gammainc(dims/2 + 1, alpha * (self.r ** 2)) * gamma(dims / 2 + 1) /
+                      incgamma(dims/2 + 1, alpha * (r ** 2)) /
                       ((alpha ** (1 + (dims / 2))) * (self.cdr(1) ** alpha))) + \
                      (self.cdr(1 / alpha) / ((alpha ** (dims / 2)) * (self.cdr(1) ** alpha)) *
                       np.log(self.cdr(self.sigma ** 2) / self.cdr(1)))
+
+        return divergence
+
+    def logarithmic_alpha_divergence(self, alpha):
+        dims = self.dims
+        r = self.r
+        alpha_tilde = 1 - (1 - alpha) * (1 - (self.sigma ** (-2.)))
+
+        divergence = (self.sigma ** dims * self.cdr(self.sigma ** 2) / self.cdr(1)) ** (alpha - 1) * \
+                     (np.log(self.sigma ** dims * self.cdr(self.sigma ** 2) / self.cdr(1)) *
+                      self.cdr(1 / alpha_tilde) / self.cdr(1) / (alpha_tilde ** (dims / 2)) -
+                      (1 - (self.sigma ** (-2.))) *
+                      incgamma(self.dims / 2 + 1, (alpha_tilde * r ** 2) / 2) /
+                      (incgamma(self.dims / 2, (r ** 2) / 2)) / alpha_tilde ** (dims / 2 + 1))
 
         return divergence
 

@@ -1,6 +1,10 @@
 import numpy as np
-from scipy.special import gamma
+from scipy.special import gamma, gammainc
 from sklearn.neighbors import NearestNeighbors
+
+
+def incgamma(a, x):
+    return gammainc(a, x) * gamma(a)
 
 
 def find_unit_volume(dims):
